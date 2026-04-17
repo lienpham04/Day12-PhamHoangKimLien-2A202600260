@@ -81,7 +81,10 @@ async def security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     # Ẩn server info
-    response.headers.pop("server", None)
+    try:
+        del response.headers["server"]
+    except KeyError:
+        pass
     return response
 
 
@@ -194,9 +197,5 @@ def health():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
-    print("\n=== Demo credentials ===")
-    print("  student / demo123  (10 req/min, $1/day budget)")
-    print("  teacher / teach456 (100 req/min, $1/day budget)")
-    print(f"\nDocs: http://localhost:{port}/docs\n")
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)

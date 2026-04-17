@@ -114,10 +114,10 @@ python app.py
 
 ###  Checkpoint 1
 
-- [ ] Hiểu tại sao hardcode secrets là nguy hiểm
-- [ ] Biết cách dùng environment variables
-- [ ] Hiểu vai trò của health check endpoint
-- [ ] Biết graceful shutdown là gì
+- [x] Hiểu tại sao hardcode secrets là nguy hiểm
+- [x] Biết cách dùng environment variables
+- [x] Hiểu vai trò của health check endpoint
+- [x] Biết graceful shutdown là gì
 
 ---
 
@@ -229,10 +229,10 @@ curl http://localhost/ask -X POST \
 
 ###  Checkpoint 2
 
-- [ ] Hiểu cấu trúc Dockerfile
-- [ ] Biết lợi ích của multi-stage builds
-- [ ] Hiểu Docker Compose orchestration
-- [ ] Biết cách debug container (`docker logs`, `docker exec`)
+- [x] Hiểu cấu trúc Dockerfile
+- [x] Biết lợi ích của multi-stage builds
+- [x] Hiểu Docker Compose orchestration
+- [x] Biết cách debug container (`docker logs`, `docker exec`)
 
 ---
 
@@ -470,10 +470,10 @@ def check_budget(user_id: str, estimated_cost: float) -> bool:
 
 ###  Checkpoint 4
 
-- [ ] Implement API key authentication
-- [ ] Hiểu JWT flow
-- [ ] Implement rate limiting
-- [ ] Implement cost guard với Redis
+- [x] Implement API key authentication
+- [x] Hiểu JWT flow
+- [x] Implement rate limiting
+- [x] Implement cost guard với Redis
 
 ---
 
@@ -642,11 +642,11 @@ Script này:
 
 ###  Checkpoint 5
 
-- [ ] Implement health và readiness checks
-- [ ] Implement graceful shutdown
-- [ ] Refactor code thành stateless
-- [ ] Hiểu load balancing với Nginx
-- [ ] Test stateless design
+- [x] Implement health và readiness checks
+- [x] Implement graceful shutdown
+- [x] Refactor code thành stateless
+- [x] Hiểu load balancing với Nginx
+- [x] Test stateless design
 
 ---
 

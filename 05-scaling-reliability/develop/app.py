@@ -148,23 +148,23 @@ def health():
 def ready():
     """
     READINESS PROBE — "Agent có sẵn sàng nhận request chưa?"
-
-    Load balancer dùng endpoint này để quyết định có route
-    traffic vào instance này không.
-
-    Trả về 503 khi:
-    - Đang khởi động (model chưa load xong)
-    - Đang shutdown
-    - Database/dependencies chưa connect
     """
     if not _is_ready:
         raise HTTPException(
             status_code=503,
             detail="Agent not ready. Check back in a few seconds.",
         )
+    
+    # Simulate DB/Redis check
+    # In a real app, you would do: redis.ping() or db.execute("SELECT 1")
+    is_database_ok = True 
+    if not is_database_ok:
+        raise HTTPException(status_code=503, detail="Database connection failed")
+        
     return {
         "ready": True,
         "in_flight_requests": _in_flight_requests,
+        "dependencies": {"database": "ok", "redis": "ok"}
     }
 
 

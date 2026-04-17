@@ -64,15 +64,33 @@ def root():
     return {"message": "AI Agent API", "auth": "Required for /ask"}
 
 
+try:
+    from cost_guard import cost_guard
+except ImportError:
+    from .cost_guard import cost_guard
+
+# ... (rest of the file remains similar but with integration) ...
+
 @app.post("/ask")
 async def ask_agent(
     question: str,
     _key: str = Depends(verify_api_key),  # ✅ require auth
 ):
     """Protected endpoint — cần X-API-Key header"""
+    # Simply use the key as user_id for this demo
+    user_id = _key 
+    
+    # Check budget before execution
+    cost_guard.check_budget(user_id)
+    
+    answer = ask(question)
+    
+    # Record a mock cost per request
+    cost_guard.record_usage(user_id, 0.05) 
+    
     return {
         "question": question,
-        "answer": ask(question),
+        "answer": answer,
     }
 
 
@@ -83,7 +101,6 @@ def health():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
+    port = int(os.environ.get("PORT", 8000))
     print(f"API Key: {API_KEY}")
-    print(f"Test: curl -H 'X-API-Key: {API_KEY}' http://localhost:{port}/ask?question=hello")
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)

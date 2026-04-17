@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: production-ai-agent
+    env: docker
+    plan: free
+    region: singapore
+    dockerContext: .
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: AGENT_API_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+    healthCheckPath: /health
