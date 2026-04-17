@@ -1,0 +1,38 @@
+graph TD
+    subgraph Public_Internet ["Public Internet"]
+        User((Người dùng))
+    end
+
+    subgraph Docker_Network ["Docker Internal Network (Bridge)"]
+        Nginx[Nginx Alpine<br/>Reverse Proxy / Load Balancer]
+        
+        subgraph App_Layer ["Application Layer"]
+            Agent[Agent Service<br/>FastAPI / Uvicorn]
+        end
+
+        subgraph Data_Layer ["Data & Cache Layer"]
+            Redis[(Redis 7-Alpine<br/>Cache / Rate Limit)]
+            Qdrant[(Qdrant Vector DB<br/>RAG / Storage)]
+        end
+    end
+
+    subgraph Persistent_Storage ["Persistent Volumes"]
+        RedisVol[(redis_data)]
+        QdrantVol[(qdrant_data)]
+    end
+
+    %% Luồng dữ liệu
+    User -->|HTTP/HTTPS :80, :443| Nginx
+    Nginx -->|Proxy Pass| Agent
+    Agent -->|Query/Cache| Redis
+    Agent -->|Vector Search| Qdrant
+
+    %% Kết nối volumes
+    Redis --- RedisVol
+    Qdrant --- QdrantVol
+
+    %% Style
+    style Nginx fill:#009639,color:#fff
+    style Agent fill:#326ce5,color:#fff
+    style Redis fill:#d82c20,color:#fff
+    style Qdrant fill:#ff4081,color:#fff

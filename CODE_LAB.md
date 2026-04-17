@@ -107,10 +107,10 @@ python app.py
 
 | Feature | Basic | Advanced | Tại sao quan trọng? |
 |---------|-------|----------|---------------------|
-| Config | Hardcode | Env vars | ... |
-| Health check |  |  | ... |
-| Logging | print() | JSON | ... |
-| Shutdown | Đột ngột | Graceful | ... |
+| Config | Hardcode | Env vars | Tránh lộ secret key lên GitHub. Cho phép chạy code ở nhiều môi trường (Dev/Prod) mà không cần sửa code. |
+| Health check | Không có | Có endpoint riêng | Giúp Cloud Platform (Railway/Render) biết khi nào app bị treo để tự động khởi động lại. |
+| Logging | print() | JSON | Dễ dàng parse và phân tích log bằng máy (machine-readable), thuận tiện cho việc giám sát và tìm lỗi. |
+| Shutdown | Đột ngột | Graceful | Cho phép app xử lý nốt các request đang chạy và đóng kết nối database an toàn trước khi tắt, tránh mất dữ liệu. |
 
 ###  Checkpoint 1
 
@@ -144,9 +144,13 @@ cd ../../02-docker/develop
 **Nhiệm vụ:** Đọc `Dockerfile` và trả lời:
 
 1. Base image là gì?
+- Base image là python:3.11. Đây là môi trường Linux đã được cài đặt sẵn Python bản 3.11 để ứng dụng có thể chạy ngay.
 2. Working directory là gì?
+- Working directory là /app. Đây là thư mục làm việc mặc định bên trong container.
 3. Tại sao COPY requirements.txt trước?
+- Để tận dụng Docker layer cache. Nếu chỉ thay đổi code mà không thay đổi dependencies, Docker sẽ không cần cài lại thư viện, giúp build nhanh hơn.
 4. CMD vs ENTRYPOINT khác nhau thế nào?
+- CMD là lệnh mặc định khi container chạy, có thể bị ghi đè bởi lệnh docker run. ENTRYPOINT là lệnh chính, ít bị ghi đè hơn.
 
 ###  Exercise 2.2: Build và run
 
@@ -166,6 +170,9 @@ curl http://localhost:8000/ask -X POST \
 **Quan sát:** Image size là bao nhiêu?
 ```bash
 docker images my-agent:develop
+
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+my-agent     develop   411c20bad248   28 seconds ago   1.67GB
 ```
 
 ###  Exercise 2.3: Multi-stage build
@@ -176,13 +183,27 @@ cd ../production
 
 **Nhiệm vụ:** Đọc `Dockerfile` và tìm:
 - Stage 1 làm gì?
+Nhiệm vụ: Chuẩn bị và xây dựng các thư viện (dependencies).
+Nó cài đặt các công cụ build nặng nề như gcc, libpq-dev (dòng 21-24) để có thể compile (biên dịch) một số thư viện Python phức tạp.
+Sau đó, nó cài đặt toàn bộ requirements.txt vào thư mục /root/.local.
+Stage này đóng vai trò như một "nhà bếp" — nơi chế biến nguyên liệu nhưng không phải là nơi để "bày món" cho khách.
 - Stage 2 làm gì?
+Nhiệm vụ: Chạy ứng dụng trong môi trường sạch và bảo mật nhất.
+Nó chỉ copy những thứ cần thiết từ Stage 1 sang (dòng 45: COPY --from=builder /root/.local ...).
+Nó thiết lập một người dùng không phải root (appuser) để chạy app nhằm tăng tính bảo mật (nếu hacker chiếm quyền thì cũng không có quyền root hệ thống).
+Nó thêm các tính năng production như HEALTHCHECK (dòng 68) để Docker tự theo dõi trạng thái app.
 - Tại sao image nhỏ hơn?
+Loại bỏ "rác" build: Toàn bộ các công cụ như gcc, header files, cache của trình biên dịch trong Stage 1 bị vứt bỏ hoàn toàn. Image cuối cùng chỉ chứa các file thư viện đã được cài đặt xong.
+Base Image Slim: Sử dụng bản python:3.11-slim thay vì bản full. Bản slim đã loại bỏ sẵn nhiều công cụ Linux không cần thiết.
+Sạch sẽ: Image cuối cùng không chứa lịch sử các lệnh cài đặt rác, chỉ có code và "site-packages".
 
 Build và so sánh:
 ```bash
 docker build -t my-agent:advanced .
 docker images | grep my-agent
+
+my-agent        advanced    00990b9d95bd   About a minute ago   262MB
+my-agent        develop     411c20bad248   28 minutes ago       1.67GB
 ```
 
 ###  Exercise 2.4: Docker Compose stack
